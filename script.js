@@ -1,7 +1,6 @@
 const display = document.getElementById("display");
 const statusEl = document.getElementById("status");
 const buttons = document.querySelector(".buttons");
-const FLOATING_POINT_TOLERANCE = 1e-12;
 const DISPLAY_PRECISION = 12;
 
 const allowedIdentifiers = new Set([
@@ -54,7 +53,7 @@ function evaluateExpression(expression) {
     return "";
   }
 
-  const invalidCharacters = /[^\d+\-*/().,\sA-Za-z_^]/.test(expression);
+  const invalidCharacters = /[^\d+\-*/().\sA-Za-z_^]/.test(expression);
   if (invalidCharacters) {
     throw new Error("Expression contains unsupported characters.");
   }
@@ -75,8 +74,7 @@ function evaluateExpression(expression) {
     throw new Error("Result is not a finite number.");
   }
 
-  const normalizedResult = Math.abs(result) < FLOATING_POINT_TOLERANCE ? 0 : result;
-  const formattedResult = Number.parseFloat(normalizedResult.toPrecision(DISPLAY_PRECISION));
+  const formattedResult = Number.parseFloat(result.toPrecision(DISPLAY_PRECISION));
   return String(formattedResult);
 }
 
