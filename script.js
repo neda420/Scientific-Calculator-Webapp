@@ -1,6 +1,8 @@
 const display = document.getElementById("display");
 const statusEl = document.getElementById("status");
 const buttons = document.querySelector(".buttons");
+const FLOATING_POINT_TOLERANCE = 1e-12;
+const DISPLAY_PRECISION = 12;
 
 const allowedIdentifiers = new Set([
   "sin",
@@ -37,6 +39,16 @@ function appendValue(value) {
   setStatus("");
 }
 
+function canAppendIdentifierCharacter(character) {
+  const currentIdentifierMatch = display.value.match(/[A-Za-z_]+$/);
+  const currentIdentifier = currentIdentifierMatch ? currentIdentifierMatch[0] : "";
+  const nextIdentifier = `${currentIdentifier}${character}`;
+
+  return [...allowedIdentifiers].some((identifier) =>
+    identifier.startsWith(nextIdentifier)
+  );
+}
+
 function evaluateExpression(expression) {
   if (!expression.trim()) {
     return "";
@@ -63,8 +75,8 @@ function evaluateExpression(expression) {
     throw new Error("Result is not a finite number.");
   }
 
-  const normalizedResult = Math.abs(result) < 1e-12 ? 0 : result;
-  const formattedResult = Number.parseFloat(normalizedResult.toPrecision(12));
+  const normalizedResult = Math.abs(result) < FLOATING_POINT_TOLERANCE ? 0 : result;
+  const formattedResult = Number.parseFloat(normalizedResult.toPrecision(DISPLAY_PRECISION));
   return String(formattedResult);
 }
 
@@ -126,7 +138,14 @@ document.addEventListener("keydown", (event) => {
     return;
   }
 
-  if (/^[0-9+\-*/().^A-Za-z]$/.test(event.key)) {
+  if (/^[A-Za-z]$/.test(event.key)) {
+    if (canAppendIdentifierCharacter(event.key)) {
+      appendValue(event.key);
+    }
+    return;
+  }
+
+  if (/^[0-9+\-*/().^]$/.test(event.key)) {
     appendValue(event.key);
   }
 });
