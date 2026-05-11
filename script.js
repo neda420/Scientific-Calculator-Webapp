@@ -126,7 +126,7 @@ document.addEventListener("keydown", (event) => {
     return;
   }
 
-  if (/^[0-9+\-*/().^]$/.test(event.key)) {
+  if (/^[0-9+\-*/().^A-Za-z]$/.test(event.key)) {
     appendValue(event.key);
   }
 });
