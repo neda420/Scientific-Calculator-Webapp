@@ -84,8 +84,8 @@ function evaluateAndRender() {
   try {
     display.value = evaluateExpression(display.value);
     setStatus("");
-  } catch {
-    setStatus("Invalid expression");
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : "Invalid expression");
   }
 }
 
@@ -141,7 +141,10 @@ document.addEventListener("keydown", (event) => {
   if (/^[A-Za-z]$/.test(event.key)) {
     if (canAppendIdentifierCharacter(event.key)) {
       appendValue(event.key);
+    } else {
+      setStatus("Unsupported function or constant");
     }
+    event.preventDefault();
     return;
   }
 
