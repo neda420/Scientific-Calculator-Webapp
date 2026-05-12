@@ -1,5 +1,5 @@
 const RESULT_SIGNIFICANT_FIGURES = 12;
-const MAX_FACTORIAL_INPUT = 170; // Above this, factorial exceeds finite Number range.
+const MAX_FACTORIAL_INPUT = 170; // 170! is finite, while 171! overflows to Infinity.
 const MAX_HISTORY_LENGTH = 15;
 const HISTORY_PREVIEW_COUNT = 5;
 
@@ -202,7 +202,7 @@ function tokenize(expression) {
  * @returns {string}
  */
 function evaluateExpression(expression, options = {}) {
-  const { persistState = true } = options;
+  const { persistState = false } = options;
   if (!expression.trim()) {
     return "";
   }
@@ -375,7 +375,7 @@ function showHistory() {
 
   const latest = history
     .slice(0, HISTORY_PREVIEW_COUNT)
-    .map((entry, index) => `${index + 1}) ${entry.expression} = ${entry.result}`)
+    .map((entry) => `${entry.expression} = ${entry.result}`)
     .join(" | ");
 
   setStatus(latest);

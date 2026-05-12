@@ -54,13 +54,14 @@ runTest("rejects invalid factorial", () => {
 });
 
 runTest("tracks answer constant across evaluations", () => {
-  assert.equal(evaluateExpression("2+3"), "5");
-  assert.equal(evaluateExpression("ANS*4"), "20");
+  assert.equal(evaluateExpression("2+3", { persistState: true }), "5");
+  assert.equal(evaluateExpression("ANS*4", { persistState: true }), "20");
 });
 
 runTest("tracks history entries", () => {
-  evaluateExpression("1+1");
-  evaluateExpression("2+2");
+  evaluateExpression("1+1", { persistState: true });
+  evaluateExpression("2+2", { persistState: true });
   const items = getHistory();
   assert.equal(Array.isArray(items), true);
+  assert.equal(items.length, 2);
 });
