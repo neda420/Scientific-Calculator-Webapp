@@ -1,44 +1,75 @@
-const display = document.getElementById("display");
-const statusEl = document.getElementById("status");
-const buttons = document.querySelector(".buttons");
 const RESULT_SIGNIFICANT_FIGURES = 12;
+
+const domAvailable = typeof document !== "undefined";
+const display = domAvailable ? document.getElementById("display") : null;
+const statusEl = domAvailable ? document.getElementById("status") : null;
+const buttons = domAvailable ? document.querySelector(".buttons") : null;
+const modeEl = domAvailable ? document.getElementById("mode") : null;
+const modeToggleButton = domAvailable ? document.getElementById("mode-toggle") : null;
+
+let angleMode = "RAD";
+let lastAnswer = 0;
+const history = [];
 
 const allowedIdentifiers = new Set([
   "sin",
   "cos",
   "tan",
+  "asin",
+  "acos",
+  "atan",
   "log",
   "ln",
   "sqrt",
   "abs",
   "exp",
+  "fact",
   "PI",
-  "E"
+  "E",
+  "ANS"
 ]);
 
-const scope = {
-  sin: Math.sin,
-  cos: Math.cos,
-  tan: Math.tan,
-  log: Math.log10,
-  ln: Math.log,
-  sqrt: Math.sqrt,
-  abs: Math.abs,
-  exp: Math.exp,
-  PI: Math.PI,
-  E: Math.E
-};
-
 function setStatus(message = "") {
-  statusEl.textContent = message;
+  if (statusEl) {
+    statusEl.textContent = message;
+  }
+}
+
+function renderMode() {
+  if (modeEl) {
+    modeEl.textContent = `Mode: ${angleMode}`;
+  }
+  if (modeToggleButton) {
+    modeToggleButton.textContent = angleMode;
+  }
+}
+
+function setAngleMode(mode) {
+  if (!["RAD", "DEG"].includes(mode)) {
+    throw new Error("Invalid angle mode.");
+  }
+  angleMode = mode;
+  renderMode();
+}
+
+function toggleAngleMode() {
+  setAngleMode(angleMode === "RAD" ? "DEG" : "RAD");
+  setStatus(`Angle mode set to ${angleMode}`);
 }
 
 function appendValue(value) {
+  if (!display) {
+    return;
+  }
   display.value += value;
   setStatus("");
 }
 
 function canAppendIdentifierCharacter(character) {
+  if (!display) {
+    return false;
+  }
+
   const currentIdentifierMatch = display.value.match(/[A-Za-z_]+$/);
   const currentIdentifier = currentIdentifierMatch ? currentIdentifierMatch[0] : "";
   const nextIdentifier = `${currentIdentifier}${character}`;
@@ -46,6 +77,60 @@ function canAppendIdentifierCharacter(character) {
   return [...allowedIdentifiers].some((identifier) =>
     identifier.startsWith(nextIdentifier)
   );
+}
+
+function degreesToRadians(value) {
+  return (value * Math.PI) / 180;
+}
+
+function radiansToDegrees(value) {
+  return (value * 180) / Math.PI;
+}
+
+function factorial(value) {
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error("Factorial input must be a non-negative integer.");
+  }
+
+  if (value > 170) {
+    throw new Error("Factorial input is too large.");
+  }
+
+  let result = 1;
+  for (let i = 2; i <= value; i += 1) {
+    result *= i;
+  }
+  return result;
+}
+
+function buildScope() {
+  const useDegrees = angleMode === "DEG";
+  return {
+    sin: (value) => Math.sin(useDegrees ? degreesToRadians(value) : value),
+    cos: (value) => Math.cos(useDegrees ? degreesToRadians(value) : value),
+    tan: (value) => Math.tan(useDegrees ? degreesToRadians(value) : value),
+    asin: (value) => {
+      const result = Math.asin(value);
+      return useDegrees ? radiansToDegrees(result) : result;
+    },
+    acos: (value) => {
+      const result = Math.acos(value);
+      return useDegrees ? radiansToDegrees(result) : result;
+    },
+    atan: (value) => {
+      const result = Math.atan(value);
+      return useDegrees ? radiansToDegrees(result) : result;
+    },
+    log: Math.log10,
+    ln: Math.log,
+    sqrt: Math.sqrt,
+    abs: Math.abs,
+    exp: Math.exp,
+    fact: factorial,
+    PI: Math.PI,
+    E: Math.E,
+    ANS: lastAnswer
+  };
 }
 
 function tokenize(expression) {
@@ -108,7 +193,8 @@ function tokenize(expression) {
   return tokens;
 }
 
-function evaluateExpression(expression) {
+function evaluateExpression(expression, options = {}) {
+  const { persistState = true } = options;
   if (!expression.trim()) {
     return "";
   }
@@ -118,6 +204,7 @@ function evaluateExpression(expression) {
     throw new Error("Expression contains unsupported characters.");
   }
 
+  const scope = buildScope();
   const tokens = tokenize(expression);
   let currentIndex = 0;
 
@@ -160,7 +247,11 @@ function evaluateExpression(expression) {
         expectToken("paren", "(");
         const argument = parseExpressionTree();
         expectToken("paren", ")");
-        return value(argument);
+        const evaluated = value(argument);
+        if (!Number.isFinite(evaluated)) {
+          throw new Error("Result is not a finite number.");
+        }
+        return evaluated;
       }
 
       if (peekToken()?.type === "paren" && peekToken().value === "(") {
@@ -247,78 +338,158 @@ function evaluateExpression(expression) {
   const formattedResult = Number.parseFloat(
     result.toPrecision(RESULT_SIGNIFICANT_FIGURES)
   );
-  return String(formattedResult);
+  const finalResult = String(formattedResult);
+
+  if (persistState && finalResult !== "") {
+    lastAnswer = Number(finalResult);
+    addHistoryEntry(expression, finalResult);
+  }
+
+  return finalResult;
+}
+
+function addHistoryEntry(expression, result) {
+  history.unshift({ expression, result });
+  if (history.length > 15) {
+    history.pop();
+  }
+}
+
+function getHistory() {
+  return [...history];
+}
+
+function showHistory() {
+  if (history.length === 0) {
+    setStatus("No history yet");
+    return;
+  }
+
+  const latest = history
+    .slice(0, 5)
+    .map((entry, index) => `${index + 1}) ${entry.expression} = ${entry.result}`)
+    .join(" | ");
+
+  setStatus(latest);
 }
 
 function evaluateAndRender() {
+  if (!display) {
+    return;
+  }
+
   try {
-    display.value = evaluateExpression(display.value);
+    const expression = display.value;
+    const result = evaluateExpression(expression, { persistState: true });
+    display.value = result;
+
     setStatus("");
   } catch (error) {
     setStatus(error instanceof Error ? error.message : "Invalid expression");
   }
 }
 
-buttons.addEventListener("click", (event) => {
-  const button = event.target.closest("button");
-  if (!button) {
-    return;
-  }
-
-  const action = button.dataset.action;
-  const value = button.dataset.value;
-
-  if (action === "clear") {
-    display.value = "";
-    setStatus("");
-    return;
-  }
-
-  if (action === "delete") {
-    display.value = display.value.slice(0, -1);
-    setStatus("");
-    return;
-  }
-
-  if (action === "evaluate") {
-    evaluateAndRender();
-    return;
-  }
-
-  if (value) {
-    appendValue(value);
-  }
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    evaluateAndRender();
-    return;
-  }
-
-  if (event.key === "Backspace") {
-    display.value = display.value.slice(0, -1);
-    return;
-  }
-
-  if (event.key === "Escape") {
-    display.value = "";
-    setStatus("");
-    return;
-  }
-
-  if (/^[A-Za-z]$/.test(event.key)) {
-    if (canAppendIdentifierCharacter(event.key)) {
-      appendValue(event.key);
-    } else {
-      setStatus("Unsupported function or constant");
+if (buttons) {
+  buttons.addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) {
+      return;
     }
-    event.preventDefault();
-    return;
-  }
 
-  if (/^[0-9+\-*/().^]$/.test(event.key)) {
-    appendValue(event.key);
-  }
-});
+    const action = button.dataset.action;
+    const value = button.dataset.value;
+
+    if (action === "clear") {
+      display.value = "";
+      setStatus("");
+      return;
+    }
+
+    if (action === "delete") {
+      display.value = display.value.slice(0, -1);
+      setStatus("");
+      return;
+    }
+
+    if (action === "toggle-mode") {
+      toggleAngleMode();
+      return;
+    }
+
+    if (action === "history") {
+      showHistory();
+      return;
+    }
+
+    if (action === "evaluate") {
+      evaluateAndRender();
+      return;
+    }
+
+    if (value) {
+      appendValue(value);
+    }
+  });
+}
+
+if (domAvailable) {
+  document.addEventListener("keydown", (event) => {
+    if (!display) {
+      return;
+    }
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      evaluateAndRender();
+      return;
+    }
+
+    if (event.key === "Backspace") {
+      display.value = display.value.slice(0, -1);
+      return;
+    }
+
+    if (event.key === "Escape") {
+      display.value = "";
+      setStatus("");
+      return;
+    }
+
+    if (event.key.toLowerCase() === "m") {
+      toggleAngleMode();
+      event.preventDefault();
+      return;
+    }
+
+    if (/^[A-Za-z]$/.test(event.key)) {
+      if (canAppendIdentifierCharacter(event.key)) {
+        appendValue(event.key);
+      } else {
+        setStatus("Unsupported function or constant");
+      }
+      event.preventDefault();
+      return;
+    }
+
+    if (/^[0-9+\-*/().^]$/.test(event.key)) {
+      appendValue(event.key);
+    }
+  });
+
+  renderMode();
+}
+
+if (typeof module !== "undefined") {
+  module.exports = {
+    evaluateExpression,
+    tokenize,
+    setAngleMode,
+    getAngleMode: () => angleMode,
+    getHistory,
+    resetCalculatorState: () => {
+      angleMode = "RAD";
+      lastAnswer = 0;
+      history.length = 0;
+    }
+  };
+}

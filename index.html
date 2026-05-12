@@ -11,21 +11,31 @@
     <h1>Scientific Calculator</h1>
     <label for="display" class="sr-only">Calculator display</label>
     <input id="display" type="text" readonly aria-live="polite" />
+    <p id="mode" aria-live="polite">Mode: RAD</p>
     <p id="status" role="status" aria-live="polite"></p>
 
     <div class="buttons">
       <button data-action="clear">C</button>
       <button data-action="delete">DEL</button>
+      <button id="mode-toggle" data-action="toggle-mode">RAD</button>
+      <button data-action="history">HIST</button>
+      <button data-value="ANS">ANS</button>
       <button data-value="(">(</button>
       <button data-value=")">)</button>
 
       <button data-value="sin(">sin</button>
       <button data-value="cos(">cos</button>
       <button data-value="tan(">tan</button>
+      <button data-value="asin(">asin</button>
+      <button data-value="acos(">acos</button>
+      <button data-value="atan(">atan</button>
       <button data-value="log(">log</button>
 
       <button data-value="ln(">ln</button>
       <button data-value="sqrt(">√</button>
+      <button data-value="abs(">abs</button>
+      <button data-value="exp(">exp</button>
+      <button data-value="fact(">n!</button>
       <button data-value="^">^</button>
       <button data-value="/">÷</button>
 
