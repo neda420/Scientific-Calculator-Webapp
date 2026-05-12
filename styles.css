@@ -46,9 +46,15 @@ h1 {
   font-size: 0.85rem;
 }
 
+#mode {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: #93c5fd;
+}
+
 .buttons {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 0.5rem;
 }
 
@@ -84,4 +90,11 @@ button:hover {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+
+@media (max-width: 480px) {
+  button {
+    padding: 0.65rem 0.35rem;
+    font-size: 0.9rem;
+  }
 }
