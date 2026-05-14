@@ -8,59 +8,69 @@
 </head>
 <body>
   <main class="calculator" aria-label="Scientific calculator">
-    <h1>Scientific Calculator</h1>
-    <label for="display" class="sr-only">Calculator display</label>
-    <input id="display" type="text" readonly aria-live="polite" />
-    <p id="mode" aria-live="polite">Mode: RAD</p>
-    <p id="status" role="status" aria-live="polite"></p>
+    <header class="calculator-header">
+      <h1>Scientific Calculator</h1>
+      <p class="subtitle">Industrial-grade interface</p>
+    </header>
+
+    <section class="display-shell" aria-label="Display panel">
+      <label for="display" class="sr-only">Calculator display</label>
+      <input id="display" type="text" readonly aria-live="polite" />
+      <div class="meta-row">
+        <p id="mode" aria-live="polite">Mode: RAD</p>
+        <p id="status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
 
     <div class="buttons">
-      <button data-action="clear">C</button>
-      <button data-action="delete">DEL</button>
-      <button id="mode-toggle" data-action="toggle-mode">RAD</button>
-      <button data-action="history">HIST</button>
-      <button data-value="ANS">ANS</button>
-      <button data-value="(">(</button>
-      <button data-value=")">)</button>
+      <button class="btn-control" data-action="clear">C</button>
+      <button class="btn-control" data-action="delete">DEL</button>
+      <button class="btn-control" id="mode-toggle" data-action="toggle-mode">RAD</button>
+      <button class="btn-control" data-action="history">HIST</button>
+      <button class="btn-const" data-value="ANS">ANS</button>
+      <button class="btn-op" data-value="(">(</button>
+      <button class="btn-op" data-value=")">)</button>
 
-      <button data-value="sin(">sin</button>
-      <button data-value="cos(">cos</button>
-      <button data-value="tan(">tan</button>
-      <button data-value="asin(">asin</button>
-      <button data-value="acos(">acos</button>
-      <button data-value="atan(">atan</button>
-      <button data-value="log(">log</button>
+      <button class="btn-fn" data-value="sin(">sin</button>
+      <button class="btn-fn" data-value="cos(">cos</button>
+      <button class="btn-fn" data-value="tan(">tan</button>
+      <button class="btn-fn" data-value="asin(">asin</button>
+      <button class="btn-fn" data-value="acos(">acos</button>
+      <button class="btn-fn" data-value="atan(">atan</button>
+      <button class="btn-fn" data-value="log(">log</button>
 
-      <button data-value="ln(">ln</button>
-      <button data-value="sqrt(">√</button>
-      <button data-value="abs(">abs</button>
-      <button data-value="exp(">exp</button>
-      <button data-value="fact(">n!</button>
-      <button data-value="^">^</button>
-      <button data-value="/">÷</button>
+      <button class="btn-fn" data-value="ln(">ln</button>
+      <button class="btn-fn" data-value="sqrt(">√</button>
+      <button class="btn-fn" data-value="abs(">abs</button>
+      <button class="btn-fn" data-value="exp(">exp</button>
+      <button class="btn-fn" data-value="fact(">n!</button>
+      <button class="btn-op" data-value="^">^</button>
+      <button class="btn-op" data-value="/">÷</button>
 
-      <button data-value="7">7</button>
-      <button data-value="8">8</button>
-      <button data-value="9">9</button>
-      <button data-value="*">×</button>
+      <button class="btn-num" data-value="7">7</button>
+      <button class="btn-num" data-value="8">8</button>
+      <button class="btn-num" data-value="9">9</button>
+      <button class="btn-op" data-value="*">×</button>
 
-      <button data-value="4">4</button>
-      <button data-value="5">5</button>
-      <button data-value="6">6</button>
-      <button data-value="-">−</button>
+      <button class="btn-num" data-value="4">4</button>
+      <button class="btn-num" data-value="5">5</button>
+      <button class="btn-num" data-value="6">6</button>
+      <button class="btn-op" data-value="-">−</button>
 
-      <button data-value="1">1</button>
-      <button data-value="2">2</button>
-      <button data-value="3">3</button>
-      <button data-value="+">+</button>
+      <button class="btn-num" data-value="1">1</button>
+      <button class="btn-num" data-value="2">2</button>
+      <button class="btn-num" data-value="3">3</button>
+      <button class="btn-op" data-value="+">+</button>
 
-      <button data-value="0">0</button>
-      <button data-value=".">.</button>
-      <button data-value="PI">π</button>
-      <button data-value="E">e</button>
+      <button class="btn-num" data-value="0">0</button>
+      <button class="btn-num" data-value=".">.</button>
+      <button class="btn-const" data-value="PI">π</button>
+      <button class="btn-const" data-value="E">e</button>
 
       <button class="equals" data-action="evaluate">=</button>
     </div>
+
+    <p class="hint">Keyboard: Enter = solve, Esc = clear, Ctrl+M = mode</p>
   </main>
 
   <script src="script.js"></script>
